@@ -1,0 +1,20 @@
+{
+  "name": "poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "d.js": "^0.7.5",
+    "dot": "^1.1.2",
+    "express": "^4.16.2",
+    "photo-sphere-viewer": "^3.2.3"
+  },
+  "devDependencies": {
+    "morgan": "^1.9.0"
+  }
+}
