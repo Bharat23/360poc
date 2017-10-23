@@ -1,0 +1,72 @@
+<html>
+    <head>Auth Check</head>
+    <body>
+        <a href="https://developer.api.autodesk.com/authentication/v1/authorize?response_type=code&client_id=9qE7w28it2oEvrZexIXzpMluHEz73Own&redirect_uri=http://localhost:8999/api/callback/oauth&scope=data:read">Click here to grant access to your data!</a>
+        <button id="createBucketBtn">Create New Bucket</button>
+        <button id="getBucketBtn">Get Bucket</button>
+        <input type="file" id="fileUpload">
+    </body>
+    <script>
+        var fetchAuth = () => {
+            fetch('/api/twolegged/oauth')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.cookie='mytoken='+data.access_token;
+            })
+        };
+        var createBucketBtn = document.getElementById('createBucketBtn');
+        createBucketBtn.addEventListener('click', (e) => {
+            var token = document.cookie.split(";").filter(val => val.indexOf("mytoken=") !== -1)[0].split("=")[1];
+            fetch('/api/bucket/create', {
+                headers: {
+                    Authorization: token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
+        });
+        var getBucketBtn = document.getElementById('getBucketBtn');
+        getBucketBtn.addEventListener('click', (e) => {
+            var token = document.cookie.split(";").filter(val => val.indexOf("mytoken=") !== -1)[0].split("=")[1];
+            fetch('/api/bucket/get/test-bucket-bharat', {
+                headers: {
+                    Authorization: token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
+        });
+
+        document.getElementById('fileUpload').addEventListener('change', (e) => {
+            console.log(e.target.files);
+            var fd = new FormData();
+            var token = document.cookie.split(";").filter(val => val.indexOf("mytoken=") !== -1)[0].split("=")[1];
+            fd.append('file', e.target.files[0]);
+            fetch('/api/uploadfile', {
+                method: 'PUT',
+                body: fd,
+                headers: {
+                    Authorization: token
+                }
+            })
+            .then(response => response.json())
+            .then(data => res.json(data))
+            .catch(err => res.json(err));
+        });
+
+        window.addEventListener('load', () => {
+            fetchAuth();
+        });
+    </script>
+</html>
