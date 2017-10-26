@@ -1,19 +1,36 @@
 <html>
-    <head>Auth Check</head>
+    <head>
+        <title>Auth Check</title>
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
+        <meta charset="utf-8">
+    </head>
     <body>
         <a href="https://developer.api.autodesk.com/authentication/v1/authorize?response_type=code&client_id=9qE7w28it2oEvrZexIXzpMluHEz73Own&redirect_uri=http://localhost:8999/api/callback/oauth&scope=data:read">Click here to grant access to your data!</a>
         <button id="createBucketBtn">Create New Bucket</button>
         <button id="getBucketBtn">Get Bucket</button>
+        <button id="translateBtn">Translate</button>
         <input type="file" id="fileUpload">
+    
+        <!-- The Viewer will be instantiated here -->
+        <div id="MyViewerDiv"></div>
+    
     </body>
+
     <script>
-        var fetchAuth = () => {
-            fetch('/api/twolegged/oauth')
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                document.cookie='mytoken='+data.access_token;
-            })
+        var fetchAuth = (callback) => {
+            if(document.cookie.indexOf('mytoken=') !== -1) {
+                var token = document.cookie.split(";").filter(val => val.indexOf("mytoken=") !== -1)[0].split("=")[1];
+                //callback(token, 84520);
+            }
+            else {
+                fetch('/api/twolegged/oauth')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    document.cookie='mytoken='+data.access_token;
+                    //callback(data.access_token, data.expires_in)
+                })
+            }
         };
         var createBucketBtn = document.getElementById('createBucketBtn');
         createBucketBtn.addEventListener('click', (e) => {
@@ -61,8 +78,21 @@
                 }
             })
             .then(response => response.json())
-            .then(data => res.json(data))
-            .catch(err => res.json(err));
+            .then(data => console.log(data))
+            .catch(err => console.error(err));
+        });
+
+        document.getElementById('translateBtn').addEventListener('click', () => {
+            var token = document.cookie.split(";").filter(val => val.indexOf("mytoken=") !== -1)[0].split("=")[1];
+            fetch('/api/translate', {
+                headers: {
+                    Authorization: token
+                }
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .then(data => console.log(data))
+            .catch(err => console.error(err));
         });
 
         window.addEventListener('load', () => {

@@ -20,7 +20,7 @@ router.get('/twolegged/oauth', (req, res) => {
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: "client_id="+config.clientId+"&client_secret="+config.clientSecret+"&grant_type=client_credentials&scope=data:read data:write bucket:create bucket:read data:create account:read account:write"
+        body: "client_id="+config.clientId+"&client_secret="+config.clientSecret+"&grant_type=client_credentials&scope=data:read data:write bucket:create bucket:read data:create account:read account:write viewables:read"
     })
     .then(response => response.json())
     .then((data) => {
@@ -106,13 +106,53 @@ router.put('/uploadfile', (req, res) => {
             "Content-Type": "application/octet-stream"
         }
     })
+    .then(response => {console.log(response);return response.json()})
+    .then(data => {
+        console.log(data);
+        res.json(data);
+    })
+    .catch(err => res.status(500).end(err.toString()));
+});
+
+router.get('/translate', (req, res) => {
+    var token = req.headers.authorization;
+    console.log('toen', token);
+    var data = {
+        input: {
+            urn : 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L0hvdXNlLmR3Zng',
+        },
+        output: {
+            formats: [
+                {
+                    type: 'svf',
+                    views: [
+                        '2d',
+                        '3d'
+                    ]
+                }
+            ]
+        }
+    };
+    fetch('https://developer.api.autodesk.com/modelderivative/v2/designdata/job', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify(data)
+    })
     .then(response => response.json())
     .then(data => {
         console.log(data);
         res.json(data);
     })
-    .catch(err => res.status(500).end(err));
-    res.send(req.files);
+    .catch(err => res.status(500).end(err.toString()));
 });
 
+var doTranslate = (token, urn) => {
+};
+
 module.exports = router;
+
+var working = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L1VyYmFuSG91c2UtMjAxNS5ydnQ';
+//dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L0hvdXNlLmR3Zng - house

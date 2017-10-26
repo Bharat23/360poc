@@ -22,6 +22,10 @@ app.get('/checkAuth', (req, res) => {
     res.sendFile('/auth.html', {root: __dirname})
 });
 
+app.get('/viewer.html', (req, res) => {
+    res.sendFile('/viewer.html', {root: __dirname});
+});
+
 app.get('*', (req, res) => {
     res.sendFile('/index.html', {root: __dirname});
 });
