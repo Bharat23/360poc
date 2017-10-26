@@ -32,6 +32,24 @@ router.get('/twolegged/oauth', (req, res) => {
     });
 });
 
+router.get('/oauth/public', (req, res) => {
+    fetch('https://developer.api.autodesk.com/authentication/v1/authenticate', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "client_id="+config.clientId+"&client_secret="+config.clientSecret+"&grant_type=client_credentials&scope=viewables:read"
+    })
+    .then(response => response.json())
+    .then((data) => {
+        console.log(data);
+        res.json(data);
+    })
+    .catch(err => {
+        res.json(err);
+    });
+});
+
 router.get('/bucket/create', (req, res) => {
     var token = req.headers.authorization;
     try {
@@ -119,7 +137,7 @@ router.get('/translate', (req, res) => {
     console.log('toen', token);
     var data = {
         input: {
-            urn : 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L0hvdXNlLmR3Zng',
+            urn : 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L1NTUCUyMC0lMjBVUF9GUDElMjAtJTIwQ29weS5kd2c',
         },
         output: {
             formats: [
@@ -156,3 +174,8 @@ module.exports = router;
 
 var working = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L1VyYmFuSG91c2UtMjAxNS5ydnQ';
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L0hvdXNlLmR3Zng - house
+
+//dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L1NTUF9QMTclMjAtJTIwRlAwMS5keGY - dxf
+//dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L1NTUF9QMTclMjAtJTIwRlAwMS5kd2c - dwg
+
+//dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L1NTUCUyMC0lMjBVUF9GUDElMjAtJTIwQ29weS5kd2c - room

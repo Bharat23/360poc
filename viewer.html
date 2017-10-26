@@ -1,84 +1,140 @@
-<!DOCTYPE html>
-<html class="no-js" lang="">
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
+        <meta charset="utf-8">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The Viewer CSS -->
+        <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v3.1.*" type="text/css">
 
-    <title>Forge Viewer Sample</title>
+        <!-- Developer CSS -->
+        <style>
+            body {
+                margin: 0;
+            }
+            #MyViewerDiv {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                background-color: #F0F8FF;
+            }
+            #MyNextButton {
+                position: absolute;
+                top: 5px;
+                left: 5px;
+                z-index: 1;
+                font-size: 40px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
 
-    <!-- Common packages: JQuery & Bootstrap -->
-    <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+        <!-- The Viewer will be instantiated here -->
+        <div id="MyViewerDiv"></div>
+        <button id="MyNextButton" onClick="loadNextModel()">Next!</button>
+        <!-- The Viewer JS -->
+        <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/three.min.js?v=v3.1.*"></script>
+        <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v3.1.*"></script>
 
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/font-awesome.css" >
+        <!-- Developer JS -->
+        <script>
+            var getToken = function(callback) {
+                    fetch('/api/oauth/public')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        callback(data.access_token, data.expires_in);
+                    })
+                    .catch(err => console.error(err));
+                };
+            getToken((token, expires) => {
+                    var options = {
+                    env: 'AutodeskProduction',
+                    accessToken: token
+                    };
+                    var documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L1NTUF9QMTclMjAtJTIwRlAwMS5kd2c';
+                    Autodesk.Viewing.Initializer(options, function onInitialized() {
+                        Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+                    });
+            });
+            var viewer;
+            var lmvDoc;
+            var viewables;
+            var indexViewable;
+            /**
+            * Autodesk.Viewing.Document.load() success callback.
+            * Proceeds with model initialization.
+            */
+            function onDocumentLoadSuccess(doc) {
 
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/moment.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
+                // A document contains references to 3D and 2D viewables.
+                var viewables = Autodesk.Viewing.Document.getSubItemsWithProperties(doc.getRootItem(), {'type':'geometry', role: '2d'}, true);
+                if (viewables.length === 0) {
+                    console.error('Document contains no viewables.');
+                    return;
+                }
 
-    <!-- The Viewer CSS -->
-    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v3.1.*" type="text/css">
+                // Choose any of the avialble viewables
+                var initialViewable = viewables[0];
+                var svfUrl = doc.getViewablePath(initialViewable);
+                var modelOptions = {
+                    sharedPropertyDbPath: doc.getPropertyDbPath()
+                };
 
-    <!-- Viewer production -->
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/three.min.js?v=v3.1.*"></script>
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v3.1.*"></script>
-    
-    <!-- The Viewer Extensions -->
-    <!--<script src="/extensions/Viewing.Extension.Markup3D.min.js"></script>-->
-    <!--<script src="/extensions/Viewing.Extension.Transform.min.js"></script>-->
-    <!--<script src="/extensions/_Viewing.Extension.ControlSelector.min.js"></script>-->
+                var viewerDiv = document.getElementById('MyViewerDiv');
+                viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv);
+                viewer.start(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
 
-    <!-- The Viewer JS -->
-    <script src="/js/oauth.js"></script>
-    <script src="/js/index.js"></script>
-    
-    <!-- My JS Files -->
-    <script src="/js/main.js"></script>
+                indexViewable = 0;
+                lmvDoc = doc;
+                loadModel();
+            }
 
-</head>
+            var loadModel = () => {
+                var initialViewable = viewables[indexViewable];
+                var svfUrl = lmvDoc.getViewablePath(initialViewable);
+                var modelOptions = {
+                    sharedPropertyDbPath: lmvDoc.getPropertyDbPath()
+                };
+                viewer.loadModel(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
+            };
 
-<body>
+            /**
+             * Autodesk.Viewing.Document.load() failuire callback.
+             */
+            function onDocumentLoadFailure(viewerErrorCode) {
+                console.error('onDocumentLoadFailure() - errorCode:' + viewerErrorCode);
+            }
 
-    <!--NavBar-->
-    <nav class="navbar navbar-inverse navbar-fixed-top" id="my-navbar">
-        <div class="container">
-            <div class="collapse navbar-collapse" id="navbar-collapse">
-           \     <ul class="nav navbar-nav">
-                    <li><a href="https://github.com/jaimerosales/modelderivative-nodejs-tutorial">Model Uploader</a></li>
-                    <li><a href="https://developer.autodesk.com">Forge Developer Docs</a></li>
-                    <li style="margin-top:15px; margin-left:10px"><a href="https://twitter.com/afrojme" class="twitter-follow-button" data-show-count="false">Follow @afrojme</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script></li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                     <li><a href="https://github.com/Autodesk-Forge/viewer-nodejs-tutorial">View on GitHub </a></li>
-                </ul>
-            </div>
-        </div><!--End Container-->
-    </nav><!--End Navbar-->
+            /**
+             * viewer.loadModel() success callback.
+             * Invoked after the model's SVF has been initially loaded.
+             * It may trigger before any geometry has been downloaded and displayed on-screen.
+             */
+            function onLoadModelSuccess(model) {
+                console.log('onLoadModelSuccess()!');
+                console.log('Validate model loaded: ' + (viewer.model === model));
+                console.log(model);
+            }
 
-    <div class="container">
-        <!-- This is where your viewer should attach -->
-        <div class="center-block" id="viewerDiv"></div>
-        
-        <!-- Extension Buttons -->
-       <!--<div class="row">-->
-             <!---->
-            <!--<div class="myButton" id="background" onclick="changeBackground()">Change Background</div> -->
-            <!--<div class="myButton" id="background" onclick="resetBackground()">Reset Background</div> -->
-            <!--<div class="myButton" id="background" onclick="loadMarkup3D()">Markup3D</div>-->
-            <!--<div class="myButton" id="background" onclick="loadTransform()">Transform</div>-->
-            <!--<div class="myButton" id="background" onclick="loadControlSelector()">Control Selector</div>-->
-        <!--</div>-->
-        <!---->
-    </div><!-- /container -->
+            /**
+             * viewer.loadModel() failure callback.
+             * Invoked when there's an error fetching the SVF file.
+             */
+            function onLoadModelError(viewerErrorCode) {
+                console.error('onLoadModelError() - errorCode:' + viewerErrorCode);
+            }
 
-    <footer class="text-center">
-            <p>&copy; Autodesk Forge 2017</p>
-    </footer>
+            function loadNextModel() {
+                console.log('TODO: Load Next Model');
+                viewer.tearDown();
+                viewer.setUp(viewer.config);
 
-</body>
+                // Next viewable index. Loop back to 0 when overflown.
+                indexViewable = (indexViewable + 1) % viewables.length;
+                loadModel();
+            }
+
+        </script>
+    </body>
 </html>
