@@ -14,6 +14,10 @@ router.get('/auth', (req, res) => {
 
 });
 
+router.get('/getimages', (req, res) => {
+    res.json({images: [{url: '/images/sphere1.jpg'},{url: '/images/sphere2.jpg'},{url: '/images/sphere3.jpg'},{url: '/images/sphere4.JPG'},{url: '/images/sphere5.JPG'},{url: '/images/sphere6.JPG'}]});
+});
+
 router.get('/twolegged/oauth', (req, res) => {
     fetch('https://developer.api.autodesk.com/authentication/v1/authenticate', {
         method: "POST",
@@ -124,7 +128,7 @@ router.put('/uploadfile', (req, res) => {
             "Content-Type": "application/octet-stream"
         }
     })
-    .then(response => {console.log(response);return response.json()})
+    .then(response => {console.log(response);return response.json();})
     .then(data => {
         console.log(data);
         res.json(data);

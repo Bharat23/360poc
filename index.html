@@ -2,9 +2,32 @@
     <head>
         <title>360 Image Viewer</title>
         <link rel="stylesheet" type="text/css" href="/photo-sphere-viewer/dist/photo-sphere-viewer.min.css"></link>
+        <style>
+            .main-content {
+                display: flex;
+            }
+            #thumbnail-container {
+                display: flex;
+                flex-direction: column;
+                margin-right: 5px;
+                width: 200px;
+                height: 100%;
+            }
+            #thumbnail-container div {
+                flex: 1;
+                margin: 1px;
+            }
+            #viewer360 {
+                width: 100%;
+                background-color: rgb(206, 186, 186);
+            }
+        </style>
     </head>
     <body>
-        <div id="360viewer"></div>
+        <div class="main-content">
+            <div id="thumbnail-container"></div>
+            <div id="viewer360"></div>
+        </div>
     </body>
     <script src="/js/three.min.js"></script>
     <script src="/js/uEvent.min.js"></script>
