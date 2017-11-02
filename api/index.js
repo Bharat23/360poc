@@ -15,7 +15,9 @@ router.get('/auth', (req, res) => {
 });
 
 router.get('/getimages', (req, res) => {
-    res.json({images: [{url: '/images/sphere1.jpg'},{url: '/images/sphere2.jpg'},{url: '/images/sphere3.jpg'},{url: '/images/sphere4.JPG'},{url: '/images/sphere5.JPG'},{url: '/images/sphere6.JPG'}]});
+    var sampleImages = [{url: '/images/1.jpg', dbid: ''}, {url: '/images/2.jpg', dbid: ''}, {url: '/images/3.jpg', dbid: ''}, {url: '/images/4.jpg', dbid: ''}, {url: '/images/5.jpg', dbid: ''}, {url: '/images/6.jpg', dbid: ''}];
+    var sampleImagesJustin = [{url: '/images/origin_1_0.jpg', dbid: ''},{url: '/images/origin_1_1.jpg', dbid: ''},{url: '/images/origin_1_2.jpg', dbid: ''},{url: '/images/origin_1_3.jpg', dbid: ''},{url: '/images/origin_1_4.jpg', dbid: ''},{url: '/images/origin_1_5.jpg', dbid: ''}];
+    res.json({images: sampleImages});
 });
 
 router.get('/twolegged/oauth', (req, res) => {
