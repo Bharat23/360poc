@@ -15,6 +15,7 @@
     "dot": "^1.1.2",
     "express": "^4.16.2",
     "express-fileupload": "^0.3.0",
+    "mongoose": "^4.13.0",
     "node-fetch": "^1.7.3",
     "nodemon": "^1.12.1",
     "photo-sphere-viewer": "^3.2.3"

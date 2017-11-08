@@ -5,6 +5,8 @@ var fetch = require('node-fetch');
 
 var config = require('../config');
 
+router.use('/admin', require('./admin'));
+
 router.get('/', (req, res) => {
     console.log(config.clientId);
     res.json({here:"here"});
@@ -15,7 +17,7 @@ router.get('/auth', (req, res) => {
 });
 
 router.get('/getimages', (req, res) => {
-    var sampleImages = [{url: '/images/1.jpg', dbid: ''}, {url: '/images/2.jpg', dbid: ''}, {url: '/images/3.jpg', dbid: ''}, {url: '/images/4.jpg', dbid: ''}, {url: '/images/5.jpg', dbid: ''}, {url: '/images/6.jpg', dbid: ''}];
+    var sampleImages = [{url: '/images/1.jpg', tagId: 'tag-445-238'}, {url: '/images/2.jpg', tagId: 'tag-237-121'}, {url: '/images/3.jpg', tagId: 'tag-117-386'}, {url: '/images/4.jpg', tagId: ''}, {url: '/images/5.jpg', tagId: ''}, {url: '/images/6.jpg', tagId: ''}];
     var sampleImagesJustin = [{url: '/images/origin_1_0.jpg', dbid: ''},{url: '/images/origin_1_1.jpg', dbid: ''},{url: '/images/origin_1_2.jpg', dbid: ''},{url: '/images/origin_1_3.jpg', dbid: ''},{url: '/images/origin_1_4.jpg', dbid: ''},{url: '/images/origin_1_5.jpg', dbid: ''}];
     res.json({images: sampleImages});
 });

@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <title>POC - New Plan</title>
+        <style>
+            .image {
+                background-image: url("https://s3.amazonaws.com/novainspec/Pier+17/Ref/map_ground.jpg");
+                background-size: 100% 100%;
+                height: 450px;
+                width: 900px;
+                background-repeat: no-repeat;
+                position: relative;
+                border: 1px solid black;
+            }
+            .pointer {
+                position: absolute; 
+                width: 1%; 
+                height: 2%;
+                border-radius: 10px;
+                border: 1px solid blue; 
+                background-color: rgb(163, 163, 224);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="image"></div>
+        <input id="image-file" type="file" name="file" accept="image/*">
+    </body>
+    <script>
+        var imageDiv = document.getElementsByClassName('image')[0];
+        imageDiv.addEventListener('click', event => {
+            console.log(event);
+            let x = event.offsetX;
+            let totalX = 900; //image width
+            let totalY = 450; //image height
+            let y = event.offsetY;
+            createPointer(x, y, totalX, totalY);
+        });
+
+        document.getElementById('image-file').addEventListener('change', (event) => {
+            console.log(event.target.files[0]);
+        });
+
+        var createPointer = (x, y, totalX, totalY) => {
+            let div = document.createElement('div');
+            let xPerc = (x/totalX) * 100;
+            let yPerc = (y/totalY) * 100;
+            let tagId = 'tag-'+x+'-'+y;
+            let imageId = '1';
+            div.setAttribute('data-tag-id', tagId);
+            div.setAttribute('class', 'pointer');
+            div.setAttribute('style', 'top:'+yPerc+'%; left:'+xPerc+'%');
+            imageDiv.appendChild(div);
+            let payload = {
+                x,
+                y,
+                xPerc,
+                yPerc,
+                tagId,
+                imageId
+            };
+            fetch('/api/admin/store', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => console.log('Success', data))
+            .catch(error => console.log(error));
+        };
+
+        let storeData = (x, y, xPerc, yPerc, tagId) => {
+        };
+    </script>
+</html>

@@ -10,15 +10,71 @@ var initPhotoViewer = (data) => {
         container: 'viewer360',
         panorama: data,
         fisheye: true,
-        time_anim: false
+        time_anim: false,
+        markers: [
+            // {
+            //     id: 'image',
+            //     longitude: 1.3810192118694424,
+            //     latitude: 0.024623999874564317,
+            //     image: 'https://s3.amazonaws.com/novainspec/Pier+17/skin/NOVA_Hotspot%20Circle.png',
+            //     width: 32,
+            //     height: 32,
+            //     anchor: 'bottom center',
+            //     tooltip: 'A image marker. <b>Click me!</b>',
+            //     content: ''
+            // },
+            {
+                id: 'circle',
+                circle: 30,
+                latitude: 0.024623999874564317,
+                longitude: 1.3810192118694424,
+                tooltip: 'Move',
+                data: {
+                    redirect: true,
+                    imageUrl: '/images/2.jpg'
+                }
+            }
+        ]
     });
     
     viewer360.on('position-updated', (e) => {
-        console.log('Position Updated: Latitude: ', e.latitude, ' longitude: ', e.longitude);
+        console.log('Position Updated: Latitude: ', e.latitude, ' longitude: ', e.longitude*(180/Math.PI));
+        let tmp = document.getElementsByClassName('pointer-selected')[0];
+        let oldStyle = tmp.getAttribute('style');
+        if(oldStyle.indexOf('transform:') !== -1) {
+            let oldStyleArr = oldStyle.split(';');
+            oldStyleArr.splice(2);
+            oldStyle = oldStyleArr.join(';') + ';';
+        }
+        oldStyle += (' transform: rotate(' + e.longitude*(180/Math.PI) + 'deg);');
+        tmp.setAttribute('style', oldStyle);
     });
     
     viewer360.on('click', (e) => {
         console.log(e);
+        viewer360.addMarker({
+            id: '#' + Math.random(),
+            longitude: e.longitude,
+            latitude: e.latitude,
+            image: '/images/red-pin.png',
+            width: 32,
+            height: 32,
+            anchor: 'bottom center',
+            tooltip: 'Generated pin',
+            data: {
+              generated: true
+            }
+          });
+    });
+
+    viewer360.on('select-marker', (e) => {
+        if(e.data && e.data.redirect) {
+            console.log('From circle', e.data.redirect);
+            setTimeout(() => {
+                initPhotoViewer(e.data.imageUrl);
+                movePointerLocation('tag-237-121');
+            }, 2000);
+        }
     });
 };
 
@@ -30,11 +86,11 @@ var presentThumbnail = (images) => {
     });
 };
 
-var imageThumbnail = data => {
+var imageThumbnail = (data) => {
     var div = document.createElement('div');
     div.setAttribute('style', "background-image: url('"+ data.url +"'); background-size: cover;");
     div.setAttribute('data-img-src', data.url);
-    div.setAttribute('data-img-dbid', data.dbid);
+    div.setAttribute('data-tag-id', data.tagId);
     return div;
 };
 
@@ -48,22 +104,22 @@ var fetchImages = () => {
         .catch(err => console.error(err));
 };
 
-var init = () => {
-    fetchImages()
-    .then(data => {
-        console.log('Images', data);
-        presentThumbnail(data.images);
-    });
-    getToken((token, expires) => {
-        var options = {
-        env: 'AutodeskProduction',
-        accessToken: token
-        };
-        var documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dGVzdC1idWNrZXQtYmhhcmF0L0hvdXNlLmR3Zng';
-        Autodesk.Viewing.Initializer(options, function onInitialized() {
-            Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
-        });
-    });
+var fetchBlueprintPointers = (imageId) => {
+    return fetch('/api/admin/getpointers?imageid=1')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data;
+            })
+            .catch(err => console.log('Some Error Occurred', err));
+};
+
+var createPointer = data => {
+    var div = document.createElement('div');
+    div.setAttribute('class', 'pointer');
+    div.setAttribute('style', 'top: '+ data.yPerc + '%; left: ' + data.xPerc + '%;');
+    div.setAttribute('data-tag-id', data.tagId);
+    return div;
 };
 
 document.getElementById('thumbnail-container').addEventListener('click', (e) => {
@@ -71,106 +127,42 @@ document.getElementById('thumbnail-container').addEventListener('click', (e) => 
     if(e.target.dataset.imgSrc) {
         initPhotoViewer(e.target.dataset.imgSrc);
     }
-    if(e.target.dataset.imgDbid) {
-        let dbId = e.target.dataset.imgDbid;
-        //code here for calling the dbid
-        //2731
-        moveModel(dbId);
+    if(e.target.dataset.tagId) {
+        movePointerLocation(e.target.dataset.tagId);
     }
 });
 
-var moveModel = (dbId) => {
-    viewer.model.selector.setSelection([dbId], 2);
-    viewer.fitToView([dbId]);
+var movePointerLocation = (tagId) => {
+    cleanSelectedPointers();
+    let tmp = "div[data-tag-id=" + tagId + "][class=pointer]";
+    let selectedPointer = document.querySelector(tmp);
+    selectedPointer.classList += ' pointer-selected';
 };
 
-//code to fetch the auth token for viewer
-var getToken = function(callback) {
-    fetch('/api/oauth/public')
-    .then(response => response.json())
+var cleanSelectedPointers = () => {
+    var pointers = document.getElementsByClassName('pointer');
+    for (let el of pointers) {
+        el.setAttribute('class', 'pointer');
+    }
+};
+
+document.getElementsByClassName('blueprint-thumbnail-container')[0].addEventListener('click', (e) => {
+
+});
+
+var init = () => {
+    fetchImages()
+    .then(data => {
+        console.log('Images', data);
+        presentThumbnail(data.images);
+    });
+    fetchBlueprintPointers()
     .then(data => {
         console.log(data);
-        callback(data.access_token, data.expires_in);
-    })
-    .catch(err => console.error(err));
+        data.map(val => {
+            let div = createPointer(val);
+            document.getElementsByClassName('blueprint-thumbnail')[0].appendChild(div);
+        });
+    });
 };
-
-var viewer;
-var lmvDoc;
-var viewables;
-var indexViewable;
-/**
-* Autodesk.Viewing.Document.load() success callback.
-* Proceeds with model initialization.
-*/
-function onDocumentLoadSuccess(doc) {
-
-// A document contains references to 3D and 2D viewables.
-var viewables = Autodesk.Viewing.Document.getSubItemsWithProperties(doc.getRootItem(), {'type':'geometry', role: '3d'}, true);
-if (viewables.length === 0) {
-    console.error('Document contains no viewables.');
-    return;
-}
-
-// Choose any of the avialble viewables
-var initialViewable = viewables[0];
-var svfUrl = doc.getViewablePath(initialViewable);
-var modelOptions = {
-    sharedPropertyDbPath: doc.getPropertyDbPath()
-};
-
-var viewerDiv = document.getElementById('MyViewerDiv');
-viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv);
-viewer.start(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
-
-indexViewable = 0;
-lmvDoc = doc;
-loadModel();
-}
-
-var loadModel = () => {
-var initialViewable = viewables[indexViewable];
-var svfUrl = lmvDoc.getViewablePath(initialViewable);
-var modelOptions = {
-    sharedPropertyDbPath: lmvDoc.getPropertyDbPath()
-};
-viewer.loadModel(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
-};
-
-/**
-* Autodesk.Viewing.Document.load() failuire callback.
-*/
-function onDocumentLoadFailure(viewerErrorCode) {
-console.error('onDocumentLoadFailure() - errorCode:' + viewerErrorCode);
-}
-
-/**
-* viewer.loadModel() success callback.
-* Invoked after the model's SVF has been initially loaded.
-* It may trigger before any geometry has been downloaded and displayed on-screen.
-*/
-function onLoadModelSuccess(model) {
-console.log('onLoadModelSuccess()!');
-console.log('Validate model loaded: ' + (viewer.model === model));
-console.log(model);
-}
-
-/**
-* viewer.loadModel() failure callback.
-* Invoked when there's an error fetching the SVF file.
-*/
-function onLoadModelError(viewerErrorCode) {
-console.error('onLoadModelError() - errorCode:' + viewerErrorCode);
-}
-
-function loadNextModel() {
-console.log('TODO: Load Next Model');
-viewer.tearDown();
-viewer.setUp(viewer.config);
-
-// Next viewable index. Loop back to 0 when overflown.
-indexViewable = (indexViewable + 1) % viewables.length;
-loadModel();
-}
-
 window.addEventListener('load', init);

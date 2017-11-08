@@ -4,6 +4,16 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var fileUpload = require('express-fileupload');
+var mongoose = require('mongoose');
+
+var mongoDB = 'mongodb://127.0.0.1/poc_database';
+mongoose.connect(mongoDB, {
+    useMongoClient: true
+});
+
+var db = mongoose.connection;
+
+db.on('error', console.error.bind(console, 'MongoDB Connection Error'));
 
 app.use(morgan('tiny'));
 // parse application/x-www-form-urlencoded
@@ -24,6 +34,10 @@ app.get('/checkAuth', (req, res) => {
 
 app.get('/viewer.html', (req, res) => {
     res.sendFile('/viewer.html', {root: __dirname});
+});
+
+app.get('/new.html', (req, res) => {
+    res.sendFile('/new.html', {root: __dirname});
 });
 
 app.get('*', (req, res) => {

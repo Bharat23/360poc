@@ -42,22 +42,77 @@
                 width: 100%;
                 background-color: rgb(206, 186, 186);
             }
+            .blueprint-thumbnail-container {
+                position: absolute;
+                right: 0;
+                top: 0;
+                cursor: pointer;
+                z-index: 10;
+                box-shadow: 0px 2px 12px 1px grey;
+            }
+            .blueprint-thumbnail {
+                background-image: url("https://s3.amazonaws.com/novainspec/Pier+17/Ref/map_ground.jpg");
+                background-size: 100% 100%;
+                position: relative;
+                width: 300px;
+                height: 150px;
+            }
+            .pointer {
+                position: absolute; 
+                width: 1%; 
+                height: 2%;
+                border-radius: 10px;
+                border: 1px solid blue; 
+                background-color: rgb(163, 163, 224);
+            }
+            .pointer-selected {
+                box-shadow: 0px 0px 10px 5px red;
+            }
+
+            .pointer-selected::after {
+                content: "";
+                display: block;
+                /* border-bottom: 14px solid transparent; */
+                border-top: 36px solid transparent;
+                border-right: 15px solid rgb(99, 69, 230);
+                /* border-left: 15px solid rgb(99, 69, 230); */
+                height: 0px;
+                width: 0px;
+                position: absolute;
+                top: 0px;
+                left: -15px;
+            }
+            .pointer-selected::before {
+                content: "";
+                display: block;
+                /* border-bottom: 14px solid transparent; */
+                border-top: 36px solid transparent;
+                /* border-right: 15px solid rgb(99, 69, 230); */
+                border-left: 15px solid rgb(99, 69, 230);
+                height: 0px;
+                width: 0px;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
         </style>
     </head>
     <body>
         <div class="main-content">
             <div id="thumbnail-container"></div>
             <div id="viewer360"></div>
-            <div id="MyViewerDiv"></div>
+            <div class="blueprint-thumbnail-container">
+                <div class="blueprint-thumbnail">
+                </div>
+            </div>
         </div>
+        <button onclick="loadMarkupExtension()">Check</button>
     </body>
     <script src="/js/three.min.js"></script>
     <script src="/js/uEvent.min.js"></script>
     <script src="/d.js/lib/D.js"></script>
     <script src="/dot/doT.min.js"></script>
     <script src="/photo-sphere-viewer/dist/photo-sphere-viewer.min.js"></script>
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/three.min.js?v=v3.1.*"></script>
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v3.1.*"></script>
     <script src="/js/main.js"></script>
     <script type="text/javascript">
         
