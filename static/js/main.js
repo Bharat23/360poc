@@ -39,15 +39,17 @@ var initPhotoViewer = (data) => {
     
     viewer360.on('position-updated', (e) => {
         console.log('Position Updated: Latitude: ', e.latitude, ' longitude: ', e.longitude*(180/Math.PI));
-        let tmp = document.getElementsByClassName('pointer-selected')[0];
-        let oldStyle = tmp.getAttribute('style');
-        if(oldStyle.indexOf('transform:') !== -1) {
-            let oldStyleArr = oldStyle.split(';');
-            oldStyleArr.splice(2);
-            oldStyle = oldStyleArr.join(';') + ';';
+        let tmp = document.getElementsByClassName('pointer-selected');
+        for (let el of tmp) {
+            let oldStyle = el.getAttribute('style');
+            if(oldStyle.indexOf('transform:') !== -1) {
+                let oldStyleArr = oldStyle.split(';');
+                oldStyleArr.splice(2);
+                oldStyle = oldStyleArr.join(';') + ';';
+            }
+            oldStyle += (' transform: rotate(' + e.longitude*(180/Math.PI) + 'deg);');
+            el.setAttribute('style', oldStyle);
         }
-        oldStyle += (' transform: rotate(' + e.longitude*(180/Math.PI) + 'deg);');
-        tmp.setAttribute('style', oldStyle);
     });
     
     viewer360.on('click', (e) => {
@@ -65,15 +67,30 @@ var initPhotoViewer = (data) => {
               generated: true
             }
           });
+        let longitude = e.longitude;
+        let latitude = e.latitude;
+        viewer360.animate({longitude, latitude}, 1000);
     });
 
-    viewer360.on('select-marker', (e) => {
-        if(e.data && e.data.redirect) {
-            console.log('From circle', e.data.redirect);
-            setTimeout(() => {
-                initPhotoViewer(e.data.imageUrl);
-                movePointerLocation('tag-237-121');
-            }, 2000);
+    viewer360.on('dblclick', (e, dblclick) => {
+        console.log('dbl', e, dblclick);
+    });
+
+    viewer360.on('select-marker', (marker, dblclick) => {
+        console.log(marker, dblclick);
+        if (dblclick === true) {
+            if (marker.data && marker.data.generated) {
+                viewer360.removeMarker(marker);
+            }
+        }
+        else {
+            if(marker.data && marker.data.redirect) {
+                console.log('From circle', marker.data.redirect);
+                setTimeout(() => {
+                    initPhotoViewer(marker.data.imageUrl);
+                    movePointerLocation('tag-237-121');
+                }, 2000);
+            }
         }
     });
 };
@@ -135,8 +152,10 @@ document.getElementById('thumbnail-container').addEventListener('click', (e) => 
 var movePointerLocation = (tagId) => {
     cleanSelectedPointers();
     let tmp = "div[data-tag-id=" + tagId + "][class=pointer]";
-    let selectedPointer = document.querySelector(tmp);
-    selectedPointer.classList += ' pointer-selected';
+    let selectedPointer = document.querySelectorAll(tmp);
+    for (let el of selectedPointer) {
+        el.classList += ' pointer-selected';
+    }
 };
 
 var cleanSelectedPointers = () => {
@@ -160,8 +179,10 @@ var init = () => {
     .then(data => {
         console.log(data);
         data.map(val => {
-            let div = createPointer(val);
-            document.getElementsByClassName('blueprint-thumbnail')[0].appendChild(div);
+            let divSmall = createPointer(val);
+            let divLarge = divSmall.cloneNode(true);
+            document.getElementsByClassName('blueprint-thumbnail')[0].appendChild(divSmall);
+            document.getElementsByClassName('blueprint-large')[0].appendChild(divLarge);
         });
     });
 };

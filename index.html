@@ -6,6 +6,10 @@
         <!-- The Viewer CSS -->
         <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v3.1.*" type="text/css">
         <link rel="stylesheet" type="text/css" href="/photo-sphere-viewer/dist/photo-sphere-viewer.min.css"></link>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
         <style>
             body {
                 margin: 0;
@@ -57,6 +61,18 @@
                 width: 300px;
                 height: 150px;
             }
+
+            .blueprint-large-container {
+            }
+
+            .blueprint-large {
+                background-image: url("https://s3.amazonaws.com/novainspec/Pier+17/Ref/map_ground.jpg");
+                background-size: 100% 100%;
+                position: relative;
+                width: 800px;
+                height: 400px;
+            }
+
             .pointer {
                 position: absolute; 
                 width: 1%; 
@@ -74,13 +90,13 @@
                 display: block;
                 /* border-bottom: 14px solid transparent; */
                 border-top: 36px solid transparent;
-                border-right: 15px solid rgb(99, 69, 230);
+                border-right: 1px solid black;
                 /* border-left: 15px solid rgb(99, 69, 230); */
                 height: 0px;
                 width: 0px;
                 position: absolute;
                 top: 0px;
-                left: -15px;
+                left: 0px;
             }
             .pointer-selected::before {
                 content: "";
@@ -88,7 +104,7 @@
                 /* border-bottom: 14px solid transparent; */
                 border-top: 36px solid transparent;
                 /* border-right: 15px solid rgb(99, 69, 230); */
-                border-left: 15px solid rgb(99, 69, 230);
+                border-left: 1px solid black;
                 height: 0px;
                 width: 0px;
                 position: absolute;
@@ -101,11 +117,32 @@
         <div class="main-content">
             <div id="thumbnail-container"></div>
             <div id="viewer360"></div>
-            <div class="blueprint-thumbnail-container">
+            <div class="blueprint-thumbnail-container" data-toggle="modal" data-target="#myModal">
                 <div class="blueprint-thumbnail">
                 </div>
             </div>
         </div>
+        <div id="myModal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg">
+          
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <h4 class="modal-title">Blue Print</h4>
+                </div>
+                <div class="modal-body">
+                  <div class="blueprint-large-container">
+                      <div class="blueprint-large"></div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+          
+            </div>
+          </div>
         <button onclick="loadMarkupExtension()">Check</button>
     </body>
     <script src="/js/three.min.js"></script>
@@ -113,8 +150,9 @@
     <script src="/d.js/lib/D.js"></script>
     <script src="/dot/doT.min.js"></script>
     <script src="/photo-sphere-viewer/dist/photo-sphere-viewer.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="/js/main.js"></script>
-    <script type="text/javascript">
-        
-    </script>
 </html>
