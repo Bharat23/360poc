@@ -1,4 +1,5 @@
 var viewer360;
+var droppedPin = {};
 
 var initPhotoViewer = (data) => {
     console.log(data);
@@ -52,24 +53,11 @@ var initPhotoViewer = (data) => {
         }
     });
     
-    viewer360.on('click', (e) => {
-        console.log(e);
-        viewer360.addMarker({
-            id: '#' + Math.random(),
-            longitude: e.longitude,
-            latitude: e.latitude,
-            image: '/images/red-pin.png',
-            width: 32,
-            height: 32,
-            anchor: 'bottom center',
-            tooltip: 'Generated pin',
-            data: {
-              generated: true
-            }
-          });
-        let longitude = e.longitude;
-        let latitude = e.latitude;
-        viewer360.animate({longitude, latitude}, 1000);
+    viewer360.on('click', (ev) => {
+        console.log(ev, ev.longitude, ev.latitude);
+        droppedPin.longitude = ev.longitude;
+        droppedPin.latitude = ev.latitude;
+        document.getElementById('confirmModal').setAttribute('style', 'display: block; z-index: 100');
     });
 
     viewer360.on('dblclick', (e, dblclick) => {
@@ -165,9 +153,72 @@ var cleanSelectedPointers = () => {
     }
 };
 
+var findNewPoint = (x, y, angle, distance) => {
+    var result = {};
+    result.x = Math.round(Math.cos(angle * Math.PI / 180) * distance + x);
+    result.y = Math.round(Math.sin(angle * Math.PI / 180) * distance + y);
+    return result;
+}
+
 document.getElementsByClassName('blueprint-thumbnail-container')[0].addEventListener('click', (e) => {
 
 });
+
+document.getElementById('confirmCancel').addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('confirmModal').style.display = 'none';
+});
+
+document.getElementById('confirmOk').addEventListener('click', e => {
+    document.getElementById('confirmModal').style.display = 'none';
+    viewer360.addMarker({
+        id: '#' + Math.random(),
+        longitude: droppedPin.longitude,
+        latitude: droppedPin.latitude,
+        image: '/images/red-pin.png',
+        width: 32,
+        height: 32,
+        anchor: 'bottom center',
+        tooltip: 'Generated pin',
+        data: {
+          generated: true
+        }
+    });
+    viewer360.animate(droppedPin, 1000);
+    let blueprintThumbnailContainer = document.getElementsByClassName('blueprint-thumbnail-container')[0];
+    blueprintThumbnailContainer.click();
+    let finalAngle = (droppedPin.longitude*(180/Math.PI) + 90) % 360;
+    let largeBlueprint = document.getElementsByClassName('blueprint-large')[0];
+    let selectedPointer = largeBlueprint.querySelector('.pointer-selected');
+    let y = (parseFloat(selectedPointer.style.top.replace('%'))/100) * 400;//image height
+    let x = (parseFloat(selectedPointer.style.left.replace('%'))/100) * 800; //image width
+    let newPoints = findNewPoint(x, y, finalAngle, 30);
+    createUserPinBlueprint(newPoints.x, newPoints.y, 800, 400);
+});
+
+var createUserPinBlueprint = (x, y , imageX, imageY) => {
+    let div = document.createElement('div');
+    div.setAttribute('class', 'user-pointer');
+    div.setAttribute('draggable', 'true');
+    let top = (y/imageY) * 100;
+    let left = (x/imageX) * 100;
+    div.setAttribute('style', 'top: '+top +'%; left: '+ left + '%');
+    document.getElementsByClassName('blueprint-large')[0].appendChild(div);
+    div.addEventListener('dragstart', (e) => {
+        e.stopPropagation();
+        console.log(e.target);
+        e.dataTransfer.setData('pin', e.target);
+    }, false);
+    div.addEventListener('dragend' , (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('end', e.target);
+        console.log(e.dataTransfer);
+        console.log('ending', e);
+        e.target.style = 'top: '+ e.pageY%400 +'; left: '+ e.pageX%800 +''; 
+    }, false);
+};
 
 var init = () => {
     fetchImages()
