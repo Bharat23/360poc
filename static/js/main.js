@@ -200,24 +200,43 @@ document.getElementById('confirmOk').addEventListener('click', e => {
 var createUserPinBlueprint = (x, y , imageX, imageY) => {
     let div = document.createElement('div');
     div.setAttribute('class', 'user-pointer');
-    div.setAttribute('draggable', 'true');
+     div.setAttribute('id', 'dragme');
     let top = (y/imageY) * 100;
     let left = (x/imageX) * 100;
     div.setAttribute('style', 'top: '+top +'%; left: '+ left + '%');
+    div.setAttribute('style', 'position:absolute');
     document.getElementsByClassName('blueprint-large')[0].appendChild(div);
-    div.addEventListener('dragstart', (e) => {
-        e.stopPropagation();
-        console.log(e.target);
-        e.dataTransfer.setData('pin', e.target);
-    }, false);
-    div.addEventListener('dragend' , (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('end', e.target);
-        console.log(e.dataTransfer);
-        console.log('ending', e);
-        e.target.style = 'top: '+ e.pageY%400 +'; left: '+ e.pageX%800 +''; 
-    }, false);
+    // div.addEventListener('dragstart', (e) => {
+    //     e.stopPropagation();
+    //     console.log(e.target);
+    //     e.dataTransfer.setData('pin', e.target);
+    // }, false);
+    // div.addEventListener('dragend' , (e) => {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     console.log('end', e.target);
+    //     console.log(e.dataTransfer);
+    //     console.log('ending', e);
+    //     e.target.style = 'top: '+ e.pageY%400 +'; left: '+ e.pageX%800 +'';
+    // }, false);
+
+    document.getElementById("dragme").onmousedown = function(e) {
+        this.prevX = e.clientX;
+        this.prevY = e.clientY;
+        this.mouseDown = true;
+    }
+    document.getElementById("dragme").onmousemove = function(e) {
+        if(this.mouseDown) {
+            this.style.left = (Number(this.style.left.substring(0, this.style.left.length-2)) + (e.clientX - this.prevX)) + "px";
+            this.style.top = (Number(this.style.top.substring(0, this.style.top.length-2)) + (e.clientY - this.prevY)) + "px";
+        }
+        this.prevX = e.clientX;
+        this.prevY = e.clientY;
+    }
+    document.getElementById("dragme").onmouseup = function(e) {
+        console.log("==" , e.clientX, e.clientY);
+        this.mouseDown = false;
+    }
 };
 
 var init = () => {
