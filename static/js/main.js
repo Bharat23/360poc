@@ -203,9 +203,9 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
      div.setAttribute('id', 'dragme');
     let top = (y/imageY) * 100;
     let left = (x/imageX) * 100;
-    div.setAttribute('style', 'top: '+top +'%; left: '+ left + '%');
-    div.setAttribute('style', 'position:absolute');
     document.getElementsByClassName('blueprint-large')[0].appendChild(div);
+    div.setAttribute('style', 'position:absolute');
+    div.setAttribute('style', 'top: '+y +'px; left: '+ x + 'px');
     // div.addEventListener('dragstart', (e) => {
     //     e.stopPropagation();
     //     console.log(e.target);
@@ -234,7 +234,7 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
         this.prevY = e.clientY;
     }
     document.getElementById("dragme").onmouseup = function(e) {
-        console.log("==" , e.clientX, e.clientY);
+        alert("X = " + (Number(this.style.left.substring(0, this.style.left.length-2))/8 + "m, " + "Y=" +  Number(this.style.top.substring(0, this.style.top.length-2))/8) + "m");
         this.mouseDown = false;
     }
 };
