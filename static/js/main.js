@@ -1,5 +1,7 @@
 var viewer360;
 var droppedPin = {};
+var trianglePoints = {};
+var addedMarker;
 
 var initPhotoViewer = (data) => {
     console.log(data);
@@ -158,7 +160,7 @@ var findNewPoint = (x, y, angle, distance) => {
     result.x = Math.round(Math.cos(angle * Math.PI / 180) * distance + x);
     result.y = Math.round(Math.sin(angle * Math.PI / 180) * distance + y);
     return result;
-}
+};
 
 document.getElementsByClassName('blueprint-thumbnail-container')[0].addEventListener('click', (e) => {
 
@@ -172,7 +174,7 @@ document.getElementById('confirmCancel').addEventListener('click', e => {
 
 document.getElementById('confirmOk').addEventListener('click', e => {
     document.getElementById('confirmModal').style.display = 'none';
-    viewer360.addMarker({
+    addedMarker = viewer360.addMarker({
         id: '#' + Math.random(),
         longitude: droppedPin.longitude,
         latitude: droppedPin.latitude,
@@ -193,14 +195,16 @@ document.getElementById('confirmOk').addEventListener('click', e => {
     let selectedPointer = largeBlueprint.querySelector('.pointer-selected');
     let y = (parseFloat(selectedPointer.style.top.replace('%'))/100) * 400;//image height
     let x = (parseFloat(selectedPointer.style.left.replace('%'))/100) * 800; //image width
+    trianglePoints.B = {x: Math.round(x), y: Math.round(y)};
     let newPoints = findNewPoint(x, y, finalAngle, 30);
+    trianglePoints.A = {x: newPoints.x, y: newPoints.y};
     createUserPinBlueprint(newPoints.x, newPoints.y, 800, 400);
 });
 
 var createUserPinBlueprint = (x, y , imageX, imageY) => {
     let div = document.createElement('div');
     div.setAttribute('class', 'user-pointer');
-     div.setAttribute('id', 'dragme');
+    div.setAttribute('id', 'dragme');
     let top = (y/imageY) * 100;
     let left = (x/imageX) * 100;
     document.getElementsByClassName('blueprint-large')[0].appendChild(div);
@@ -223,8 +227,9 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
     document.getElementById("dragme").onmousedown = function(e) {
         this.prevX = e.clientX;
         this.prevY = e.clientY;
+        console.log('mousedown', e);
         this.mouseDown = true;
-    }
+    };
     document.getElementById("dragme").onmousemove = function(e) {
         if(this.mouseDown) {
             this.style.left = (Number(this.style.left.substring(0, this.style.left.length-2)) + (e.clientX - this.prevX)) + "px";
@@ -232,12 +237,45 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
         }
         this.prevX = e.clientX;
         this.prevY = e.clientY;
-    }
+    };
     document.getElementById("dragme").onmouseup = function(e) {
-        alert("X = " + (Number(this.style.left.substring(0, this.style.left.length-2))/8 + "m, " + "Y=" +  Number(this.style.top.substring(0, this.style.top.length-2))/8) + "m");
+        //alert("X = " + (Number(this.style.left.substring(0, this.style.left.length-2))/8 + "m, " + "Y=" +  Number(this.style.top.substring(0, this.style.top.length-2))/8) + "m");
+        trianglePoints.C = {x: Number(this.style.left.substring(0, this.style.left.length-2)), y: Number(this.style.top.substring(0, this.style.top.length-2))};
         this.mouseDown = false;
-    }
+        console.log(trianglePoints); 
+        
+        trianglePoints.A = findNewPoint(trianglePoints.B.x, trianglePoints.B.y, 0, 30);
+        let BA = {x: (trianglePoints.B.x - trianglePoints.A.x), y: (trianglePoints.B.y - trianglePoints.A.y)};
+        let BC = {x: (trianglePoints.B.x - trianglePoints.C.x), y: (trianglePoints.B.y - trianglePoints.C.y)};
+        let LHS = (BA.x*BC.x) + (BA.y*BC.y);
+        let RHS = Math.sqrt(Math.pow(BA.x, 2) + Math.pow(BA.y, 2)) * Math.sqrt(Math.pow(BC.x, 2) + Math.pow(BC.y, 2));
+        let finalAngle = (Math.acos((LHS/RHS))) * (180/ Math.PI);
+        if ( trianglePoints.C.y < trianglePoints.B.y ) {
+            finalAngle = 360 - finalAngle;
+        }
+        console.log(finalAngle);
+        viewer360.animate({latitude: 0, longitude: (finalAngle - 90) * (Math.PI/180)}, 1000);
+        removeMarker(addedMarker);
+        addedMarker = addMarker({latitude: 0, longitude: (finalAngle - 90) * (Math.PI/180)});
+    };
 };
+
+var addMarker = obj => {
+    return viewer360.addMarker({
+            id: '#' + Math.random(),
+            longitude: obj.longitude,
+            latitude: obj.latitude,
+            image: '/images/red-pin.png',
+            width: 32,
+            height: 32,
+            anchor: 'bottom center',
+            tooltip: 'Generated pin',
+            data: {
+            generated: true
+            }
+        });
+};
+var removeMarker = marker => viewer360.removeMarker(marker);
 
 var init = () => {
     fetchImages()
