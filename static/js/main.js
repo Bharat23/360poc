@@ -3,6 +3,26 @@ var droppedPin = {};
 var trianglePoints = {};
 var addedMarker;
 
+var fetch360Markers = (tagId) => {
+    return fetch('/api/user/getpinbyid?tagid=' + tagId)
+        .then(response => response.json())
+        .then(data => {
+            return data;
+        })
+        .catch(err => console.error(err));
+};
+
+var renderPersistedMarkers = () => {
+    fetch360Markers('tag-445-238')
+        .then(data => {
+            console.log(data);
+            data.forEach(function (marker) {
+                console.log("marker", marker);
+                addMarker({latitude : marker.latitude, longitude : marker.longitude})
+            })
+        })
+};
+
 var initPhotoViewer = (data) => {
     console.log(data);
     if(viewer360) {
@@ -39,6 +59,9 @@ var initPhotoViewer = (data) => {
             }
         ]
     });
+    renderPersistedMarkers();
+
+
     
     viewer360.on('position-updated', (e) => {
         console.log('Position Updated: Latitude: ', e.latitude, ' longitude: ', e.longitude*(180/Math.PI));
@@ -315,4 +338,6 @@ var init = () => {
         });
     });
 };
+
+
 window.addEventListener('load', init);
