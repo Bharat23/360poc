@@ -211,24 +211,35 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
     document.getElementsByClassName('blueprint-large')[0].appendChild(div);
     div.setAttribute('style', 'position:absolute');
     div.setAttribute('style', 'top: '+y +'px; left: '+ x + 'px');
-    // div.addEventListener('dragstart', (e) => {
-    //     e.stopPropagation();
-    //     console.log(e.target);
-    //     e.dataTransfer.setData('pin', e.target);
-    // }, false);
-    // div.addEventListener('dragend' , (e) => {
-    //     e.preventDefault();
-    //     e.stopPropagation();
-    //     console.log('end', e.target);
-    //     console.log(e.dataTransfer);
-    //     console.log('ending', e);
-    //     e.target.style = 'top: '+ e.pageY%400 +'; left: '+ e.pageX%800 +'';
-    // }, false);
 
-    document.getElementById("dragme").addEventListener("dblclick",  () => {
+    document.getElementById("dragme").addEventListener("dblclick",  function() {
         var dropItHere = confirm("Do you want to save it now?");
         if(dropItHere) {
             // TO DO - make api call
+            console.log(this);
+            let tagId = document.getElementsByClassName('pointer-selected')[0].getAttribute('data-tag-id');
+            let payload = {
+                x: this.offsetLeft,
+                y: this.offsetTop,
+                xPerc: (this.offsetLeft/800)*100,
+                yPerc: (this.offsetTop/400)*100,
+                tagId: tagId,
+                degreePosition: addedMarker.longitude
+            };
+            fetch('/api/user/storepin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                console.log(this);
+                this.setAttribute('id', '');
+            })
+            .catch(err => console.error(err));
         }
     });
 

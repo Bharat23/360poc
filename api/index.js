@@ -7,6 +7,8 @@ var config = require('../config');
 
 router.use('/admin', require('./admin'));
 
+router.use('/user', require('./user'));
+
 router.get('/', (req, res) => {
     console.log(config.clientId);
     res.json({here:"here"});
