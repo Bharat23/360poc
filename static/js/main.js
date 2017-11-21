@@ -76,7 +76,7 @@ var initPhotoViewer = (data) => {
         else {
             if(marker.data && marker.data.redirect) {
                 console.log('From circle', marker.data.redirect);
-                document.getElementsByClassName('psv-canvas')[0].style += ' ; transition: all 3 s; transform: scale(1.2);';
+                document.getElementsByClassName('psv-canvas')[0].style += ' ; transition: all 3s; transform: scale(1.2);';
                 setTimeout(() => {
                     initPhotoViewer(marker.data.imageUrl);
                     movePointerLocation('tag-237-121');
