@@ -9,7 +9,7 @@ router.post('/store', (req, res) => {
         if (err) throw err;
         console.log('Successfully saved');
     });
-    res.json({ne: 'ne'});
+    res.json({status: 'success'});
 });
 
 router.get('/getpointers', (req, res) => {

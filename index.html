@@ -14,6 +14,19 @@
             body {
                 margin: 0;
             }
+            #thumbnail-container::-webkit-scrollbar {
+                width: 0.5em;
+            }
+            
+            #thumbnail-container::-webkit-scrollbar-track {
+                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            }
+            
+            #thumbnail-container::-webkit-scrollbar-thumb {
+                background-color: darkgrey;
+                outline: 1px solid slategrey;
+            }
+
             #MyViewerDiv {
                 width: 100%;
                 height: 100%;
@@ -32,15 +45,17 @@
                 display: flex;
             }
             #thumbnail-container {
-                display: flex;
+                /* display: flex; */
                 flex-direction: column;
-                margin-right: 5px;
+                /* margin-right: 5px; */
                 width: 200px;
                 height: 100%;
+                overflow-y: scroll;
             }
             #thumbnail-container div {
-                flex: 1;
+                /* flex: 1; */
                 margin: 1px;
+                height: 100px;
             }
             #viewer360 {
                 width: 100%;
