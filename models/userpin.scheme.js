@@ -7,7 +7,8 @@ var UserPinSchema = new Schema({
     y: Number,
     xPerc: Number,
     yPerc: Number,
-    degreePosition: Number,
+    latitude: Number,
+    longitude: Number,
     tagId: String
 });
 

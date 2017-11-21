@@ -224,7 +224,8 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
                 xPerc: (this.offsetLeft/800)*100,
                 yPerc: (this.offsetTop/400)*100,
                 tagId: tagId,
-                degreePosition: addedMarker.longitude
+                latitude: addedMarker.longitude,
+                longitude: addedMarker.longitude
             };
             fetch('/api/user/storepin', {
                 method: 'POST',
