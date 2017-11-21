@@ -225,6 +225,14 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
     //     e.target.style = 'top: '+ e.pageY%400 +'; left: '+ e.pageX%800 +'';
     // }, false);
 
+    document.getElementById("dragme").addEventListener("dblclick",  () => {
+        var dropItHere = confirm("Do you want to save it now?");
+        if(dropItHere) {
+            // TO DO - make api call
+        }
+    });
+
+
     document.getElementById("dragme").onmousedown = function(e) {
         this.prevX = e.clientX;
         this.prevY = e.clientY;
@@ -243,8 +251,8 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
         //alert("X = " + (Number(this.style.left.substring(0, this.style.left.length-2))/8 + "m, " + "Y=" +  Number(this.style.top.substring(0, this.style.top.length-2))/8) + "m");
         trianglePoints.C = {x: Number(this.style.left.substring(0, this.style.left.length-2)), y: Number(this.style.top.substring(0, this.style.top.length-2))};
         this.mouseDown = false;
-        console.log(trianglePoints); 
-        
+        console.log(trianglePoints);
+
         trianglePoints.A = findNewPoint(trianglePoints.B.x, trianglePoints.B.y, 0, 30);
         let BA = {x: (trianglePoints.B.x - trianglePoints.A.x), y: (trianglePoints.B.y - trianglePoints.A.y)};
         let BC = {x: (trianglePoints.B.x - trianglePoints.C.x), y: (trianglePoints.B.y - trianglePoints.C.y)};
