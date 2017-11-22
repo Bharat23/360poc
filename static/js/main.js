@@ -59,7 +59,9 @@ var initPhotoViewer = (data) => {
             }
         ]
     });
-    renderPersistedMarkers();
+    setTimeout(function () {
+        renderPersistedMarkers();
+    },2000)
 
 
     
