@@ -15,10 +15,8 @@ var fetch360Markers = (tagId) => {
 var renderPersistedMarkers = () => {
     fetch360Markers('tag-445-238')
         .then(data => {
-            console.log(data);
             data.forEach(function (marker) {
-                console.log("marker", marker);
-                addMarker({latitude : marker.latitude, longitude : marker.longitude})
+                viewer360.animate(addMarker({latitude :0, longitude : marker.longitude}), 1000);
             })
         })
 };
