@@ -2,6 +2,7 @@ var viewer360;
 var droppedPin = {};
 var trianglePoints = {};
 var addedMarker;
+var activeTagId;
 
 var fetch360Markers = (tagId) => {
     return fetch('/api/user/getpinbyid?tagid=' + tagId)
@@ -12,13 +13,22 @@ var fetch360Markers = (tagId) => {
         .catch(err => console.error(err));
 };
 
+var fetchAllUserPins = (imageId) => {
+    return fetch('/api/user/getpinbyid?imageid=' + imageId)
+        .then(response => response.json())
+        .then(data => {
+            return data;
+        })
+        .catch(err => console.error(err));
+};
+
 var renderPersistedMarkers = () => {
-    fetch360Markers('tag-445-238')
+    fetch360Markers(activeTagId)
         .then(data => {
             data.forEach(function (marker) {
-                viewer360.animate(addMarker({latitude :0, longitude : marker.longitude}), 1000);
-            })
-        })
+                addMarker({latitude :marker.latitude || 0, longitude : marker.longitude});
+            });
+        });
 };
 
 var initPhotoViewer = (data) => {
@@ -59,7 +69,7 @@ var initPhotoViewer = (data) => {
     });
     setTimeout(function () {
         renderPersistedMarkers();
-    },2000)
+    },2000);
 
 
     
@@ -73,7 +83,7 @@ var initPhotoViewer = (data) => {
                 oldStyleArr.splice(2);
                 oldStyle = oldStyleArr.join(';') + ';';
             }
-            oldStyle += (' transform: rotate(' + e.longitude*(180/Math.PI) + 'deg);');
+            oldStyle += (' transform: rotate(' + ((Number(el.dataset.angleOffset)+270)%360 + (e.longitude*(180/Math.PI)))%360 + 'deg);');
             el.setAttribute('style', oldStyle);
         }
     });
@@ -150,6 +160,7 @@ var createPointer = data => {
     div.setAttribute('class', 'pointer');
     div.setAttribute('style', 'top: '+ data.yPerc + '%; left: ' + data.xPerc + '%;');
     div.setAttribute('data-tag-id', data.tagId);
+    div.setAttribute('data-angle-offset', '' + data.offset);
     return div;
 };
 
@@ -160,6 +171,7 @@ document.getElementById('thumbnail-container').addEventListener('click', (e) => 
     }
     if(e.target.dataset.tagId) {
         movePointerLocation(e.target.dataset.tagId);
+        activeTagId = e.target.dataset.tagId;
     }
 });
 
@@ -169,6 +181,7 @@ var movePointerLocation = (tagId) => {
     let selectedPointer = document.querySelectorAll(tmp);
     for (let el of selectedPointer) {
         el.classList += ' pointer-selected';
+        el.style.transform = 'rotate(' + ((270 + Number(el.dataset.angleOffset))%360) + 'deg)';
     }
 };
 
@@ -225,6 +238,14 @@ document.getElementById('confirmOk').addEventListener('click', e => {
     createUserPinBlueprint(newPoints.x, newPoints.y, 800, 400);
 });
 
+var createStaticUserPinBlueprint = (x, y) => {
+    let div = document.createElement('div');
+    div.setAttribute('class', 'user-pointer');
+    div.setAttribute('style', 'position:absolute');
+    div.setAttribute('style', 'top: '+y +'%; left: '+ x + '%');
+    document.getElementsByClassName('blueprint-large')[0].appendChild(div);
+};
+
 var createUserPinBlueprint = (x, y , imageX, imageY) => {
     let div = document.createElement('div');
     div.setAttribute('class', 'user-pointer');
@@ -250,6 +271,7 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
                 latitude: addedMarker.latitude,
                 longitude: addedMarker.longitude
             };
+            console.log('payload', payload);
             fetch('/api/user/storepin', {
                 method: 'POST',
                 headers: {
@@ -262,46 +284,51 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
                 console.log(data);
                 console.log(this);
                 this.setAttribute('id', '');
+                this.onmousedown = undefined;
+                this.onmousemove = undefined;
+                this.onmouseup = undefined;
             })
             .catch(err => console.error(err));
         }
     });
 
-
-    document.getElementById("dragme").onmousedown = function(e) {
-        this.prevX = e.clientX;
-        this.prevY = e.clientY;
-        console.log('mousedown', e);
-        this.mouseDown = true;
-    };
-    document.getElementById("dragme").onmousemove = function(e) {
-        if(this.mouseDown) {
-            this.style.left = (Number(this.style.left.substring(0, this.style.left.length-2)) + (e.clientX - this.prevX)) + "px";
-            this.style.top = (Number(this.style.top.substring(0, this.style.top.length-2)) + (e.clientY - this.prevY)) + "px";
-        }
-        this.prevX = e.clientX;
-        this.prevY = e.clientY;
-    };
-    document.getElementById("dragme").onmouseup = function(e) {
-        //alert("X = " + (Number(this.style.left.substring(0, this.style.left.length-2))/8 + "m, " + "Y=" +  Number(this.style.top.substring(0, this.style.top.length-2))/8) + "m");
-        trianglePoints.C = {x: Number(this.style.left.substring(0, this.style.left.length-2)), y: Number(this.style.top.substring(0, this.style.top.length-2))};
-        this.mouseDown = false;
-        console.log(trianglePoints);
-
-        trianglePoints.A = findNewPoint(trianglePoints.B.x, trianglePoints.B.y, 0, 30);
-        let BA = {x: (trianglePoints.B.x - trianglePoints.A.x), y: (trianglePoints.B.y - trianglePoints.A.y)};
-        let BC = {x: (trianglePoints.B.x - trianglePoints.C.x), y: (trianglePoints.B.y - trianglePoints.C.y)};
-        let LHS = (BA.x*BC.x) + (BA.y*BC.y);
-        let RHS = Math.sqrt(Math.pow(BA.x, 2) + Math.pow(BA.y, 2)) * Math.sqrt(Math.pow(BC.x, 2) + Math.pow(BC.y, 2));
-        let finalAngle = (Math.acos((LHS/RHS))) * (180/ Math.PI);
-        if ( trianglePoints.C.y < trianglePoints.B.y ) {
-            finalAngle = 360 - finalAngle;
-        }
-        console.log(finalAngle);
-        viewer360.animate({latitude: 0, longitude: (finalAngle - 90) * (Math.PI/180)}, 1000);
-        removeMarker(addedMarker);
-        addedMarker = addMarker({latitude: 0, longitude: (finalAngle - 90) * (Math.PI/180)});
-    };
+    let dragMe = document.getElementById("dragme");
+    if (dragMe) {
+        dragMe.onmousedown = function(e) {
+            this.prevX = e.clientX;
+            this.prevY = e.clientY;
+            console.log('mousedown', e);
+            this.mouseDown = true;
+        };
+        dragMe.onmousemove = function(e) {
+            if(this.mouseDown) {
+                this.style.left = (Number(this.style.left.substring(0, this.style.left.length-2)) + (e.clientX - this.prevX)) + "px";
+                this.style.top = (Number(this.style.top.substring(0, this.style.top.length-2)) + (e.clientY - this.prevY)) + "px";
+            }
+            this.prevX = e.clientX;
+            this.prevY = e.clientY;
+        };
+        dragMe.onmouseup = function(e) {
+            trianglePoints.C = {x: Number(this.style.left.substring(0, this.style.left.length-2)), y: Number(this.style.top.substring(0, this.style.top.length-2))};
+            this.mouseDown = false;
+            console.log(trianglePoints);
+    
+            trianglePoints.A = findNewPoint(trianglePoints.B.x, trianglePoints.B.y, 0, 30);
+            let BA = {x: (trianglePoints.B.x - trianglePoints.A.x), y: (trianglePoints.B.y - trianglePoints.A.y)};
+            let BC = {x: (trianglePoints.B.x - trianglePoints.C.x), y: (trianglePoints.B.y - trianglePoints.C.y)};
+            let LHS = (BA.x*BC.x) + (BA.y*BC.y);
+            let RHS = Math.sqrt(Math.pow(BA.x, 2) + Math.pow(BA.y, 2)) * Math.sqrt(Math.pow(BC.x, 2) + Math.pow(BC.y, 2));
+            let finalAngle = (Math.acos((LHS/RHS))) * (180/ Math.PI);
+            if ( trianglePoints.C.y < trianglePoints.B.y ) {
+                finalAngle = 360 - finalAngle;
+            }
+            console.log(finalAngle);
+            viewer360.animate({latitude: 0, longitude: (finalAngle - 90) * (Math.PI/180)}, 1000);
+            removeMarker(addedMarker);
+            addedMarker = addMarker({latitude: droppedPin.latitude, longitude: (finalAngle - 90) * (Math.PI/180)});
+        };
+    }
+    
 };
 
 var addMarker = obj => {
@@ -336,6 +363,11 @@ var init = () => {
             document.getElementsByClassName('blueprint-thumbnail')[0].appendChild(divSmall);
             document.getElementsByClassName('blueprint-large')[0].appendChild(divLarge);
         });
+    });
+    fetchAllUserPins(1)
+    .then(data => {
+        data
+        .map(val => createStaticUserPinBlueprint(val.xPerc, val.yPerc));
     });
 };
 

@@ -8,6 +8,7 @@ var pointerSchema = new Schema({
     xPerc: Number,
     yPerc: Number,
     tagId: String,
+    offset: Number,
     imageId: String,
     imageUrl: String
 });

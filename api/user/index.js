@@ -14,7 +14,15 @@ router.post('/storepin', (req, res) => {
 
 router.get('/getpinbyid', (req, res) => {
     let tagId = req.query.tagid;
-    UserPinModel.find({tagId})
+    let imageId = req.query.imageid || 1;
+    let query = {};
+    if (tagId) {
+        query.tagId = tagId;
+    }
+    if (imageId) {
+        query.imageId = imageId;
+    }
+    UserPinModel.find(query)
     .then(data => res.json(data))
     .catch(err => res.status(500).end(err.toString()));
 });

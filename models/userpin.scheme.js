@@ -9,7 +9,8 @@ var UserPinSchema = new Schema({
     yPerc: Number,
     latitude: Number,
     longitude: Number,
-    tagId: String
+    tagId: String,
+    imageId: {type: Number, default: 1}
 });
 
 var UserPinModel = mongoose.model('UserPinModel', UserPinSchema);
