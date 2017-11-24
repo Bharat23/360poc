@@ -21,8 +21,8 @@ router.get('/auth', (req, res) => {
 router.get('/getimages', (req, res) => {
     var sampleImages = [
         {url: '/images/1.jpg', tagId: 'tag-99-38', path: [{tagId: 'tag-98-272', latitude: 0.01720515095838171, longitude: 1.9699047078363354}, {tagId: 'tag-302-18', latitude: -0.007241130107705107, longitude: 0.41710938705620815}]}, 
-        {url: '/images/2.jpg', tagId: 'tag-98-272', path: [{tagId: 'tag-105-388', latitude: -0.03591694075692775, longitude: 0.45238066500212015}]}, 
-        {url: '/images/3.jpg', tagId: 'tag-105-388', path: [{tagId: 'tag-328-416', latitude: -0.0035799068743167517, longitude: 3.76695538684094}]}, 
+        {url: '/images/2.jpg', tagId: 'tag-98-272', path: [{tagId: 'tag-105-388', latitude: -0.03591694075692775, longitude: 0.45238066500212015}, {tagId: 'tag-99-38', latitude: 0.018985435439210274, longitude: 3.6728605472115086}]}, 
+        {url: '/images/3.jpg', tagId: 'tag-105-388', path: [{tagId: 'tag-328-416', latitude: -0.0035799068743167517, longitude: 3.76695538684094}, {tagId: 'tag-98-272', latitude: 0.006648802171878909, longitude: 2.3088375967281527}]}, 
         {url: '/images/4.jpg', tagId: 'tag-302-18', path: [{tagId: '', latitude: '', longitude: ''}]}, 
         // {url: '/images/5.jpg', tagId: 'tag-208-103', path: [{tagId: '', latitude: '', longitude: ''}]}, 
         // {url: '/images/6.jpg', tagId: 'tag-349-86', path: [{tagId: '', latitude: '', longitude: ''}]}, 
