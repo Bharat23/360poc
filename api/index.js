@@ -19,8 +19,25 @@ router.get('/auth', (req, res) => {
 });
 
 router.get('/getimages', (req, res) => {
-    var sampleImages = [{url: '/images/1.jpg', tagId: 'tag-108-383', offset: '135'}, {url: '/images/2.jpg', tagId: 'tag-332-418', offset: '0'}, {url: '/images/3.jpg', tagId: 'tag-340-308'}, {url: '/images/4.jpg', tagId: ''}, {url: '/images/5.jpg', tagId: 'tag-470-191'}, {url: '/images/6.jpg', tagId: ''}, {url: '/images/7.jpg', tagId: ''}];
-    var sampleImagesJustin = [{url: '/images/origin_1_0.jpg', dbid: ''},{url: '/images/origin_1_1.jpg', dbid: ''},{url: '/images/origin_1_2.jpg', dbid: ''},{url: '/images/origin_1_3.jpg', dbid: ''},{url: '/images/origin_1_4.jpg', dbid: ''},{url: '/images/origin_1_5.jpg', dbid: ''}];
+    var sampleImages = [
+        {url: '/images/1.jpg', tagId: 'tag-99-38', path: [{tagId: 'tag-98-272', latitude: 0.01720515095838171, longitude: 1.9699047078363354}, {tagId: 'tag-302-18', latitude: -0.007241130107705107, longitude: 0.41710938705620815}]}, 
+        {url: '/images/2.jpg', tagId: 'tag-98-272', path: [{tagId: 'tag-105-388', latitude: -0.03591694075692775, longitude: 0.45238066500212015}]}, 
+        {url: '/images/3.jpg', tagId: 'tag-105-388', path: [{tagId: 'tag-328-416', latitude: -0.0035799068743167517, longitude: 3.76695538684094}]}, 
+        {url: '/images/4.jpg', tagId: 'tag-302-18', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/5.jpg', tagId: 'tag-208-103', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/6.jpg', tagId: 'tag-349-86', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/7.jpg', tagId: 'tag-526-55', path: [{tagId: '', latitude: '', longitude: ''}]},
+        // {url: '/images/8.jpg', tagId: 'tag-645-79', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/9.jpg', tagId: 'tag-525-131', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/10.jpg', tagId: 'tag-393-129', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/11.jpg', tagId: 'tag-293-204', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/12.jpg', tagId: 'tag-288-282', path: [{tagId: '', latitude: '', longitude: ''}]},
+        // {url: '/images/13.jpg', tagId: 'tag-338-303', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/14.jpg', tagId: 'tag-328-416', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/15.jpg', tagId: 'tag-448-268', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/16.jpg', tagId: 'tag-527-291', path: [{tagId: '', latitude: '', longitude: ''}]}, 
+        // {url: '/images/17.jpg', tagId: 'tag-528-412', path: [{tagId: '', latitude: '', longitude: ''}]}
+    ];
     res.json({images: sampleImages});
 });
 

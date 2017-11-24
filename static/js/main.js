@@ -3,7 +3,11 @@ var droppedPin = {};
 var trianglePoints = {};
 var addedMarker;
 var activeTagId;
+var dataStore = {
+    imageId: 1
+};
 
+//fetch user pins by tagId from API
 var fetch360Markers = (tagId) => {
     return fetch('/api/user/getpinbyid?tagid=' + tagId)
         .then(response => response.json())
@@ -13,6 +17,7 @@ var fetch360Markers = (tagId) => {
         .catch(err => console.error(err));
 };
 
+//fetch all user pins for a blueprint
 var fetchAllUserPins = (imageId) => {
     return fetch('/api/user/getpinbyid?imageid=' + imageId)
         .then(response => response.json())
@@ -22,59 +27,43 @@ var fetchAllUserPins = (imageId) => {
         .catch(err => console.error(err));
 };
 
+//renders user pins on 360 images
 var renderPersistedMarkers = () => {
     fetch360Markers(activeTagId)
         .then(data => {
             data.forEach(function (marker) {
                 addMarker({latitude :marker.latitude || 0, longitude : marker.longitude});
             });
+            
         });
 };
 
+//initializes the 360 image viewer
 var initPhotoViewer = (data) => {
     console.log(data);
+    let markers = [];
+
     if(viewer360) {
         viewer360.destroy();
     }
-
+    let selectedImage = dataStore.images.filter(val => val.tagId === activeTagId)[0];
+    selectedImage.path.forEach(pos => {
+        markers.push(createMovementMarker(pos.latitude, pos.longitude, selectedImage.url, pos.tagId));
+    });
     viewer360 = PhotoSphereViewer({
         container: 'viewer360',
         panorama: data,
         fisheye: true,
         time_anim: false,
-        markers: [
-            // {
-            //     id: 'image',
-            //     longitude: 1.3810192118694424,
-            //     latitude: 0.024623999874564317,
-            //     image: 'https://s3.amazonaws.com/novainspec/Pier+17/skin/NOVA_Hotspot%20Circle.png',
-            //     width: 32,
-            //     height: 32,
-            //     anchor: 'bottom center',
-            //     tooltip: 'A image marker. <b>Click me!</b>',
-            //     content: ''
-            // },
-            {
-                id: 'circle',
-                circle: 30,
-                latitude: 0.024623999874564317,
-                longitude: 1.3810192118694424,
-                tooltip: 'Move',
-                data: {
-                    redirect: true,
-                    imageUrl: '/images/2.jpg'
-                }
-            }
-        ]
+        markers: markers
     });
     setTimeout(function () {
         renderPersistedMarkers();
     },2000);
 
-
-    
+    //360 image movement listener
     viewer360.on('position-updated', (e) => {
-        console.log('Position Updated: Latitude: ', e.latitude, ' longitude: ', e.longitude*(180/Math.PI));
+        //console.log('Position Updated: Latitude: ', e.latitude, ' longitude: ', e.longitude*(180/Math.PI));
         let tmp = document.getElementsByClassName('pointer-selected');
         for (let el of tmp) {
             let oldStyle = el.getAttribute('style');
@@ -88,6 +77,7 @@ var initPhotoViewer = (data) => {
         }
     });
     
+    //360 image single click event listener
     viewer360.on('click', (ev) => {
         console.log(ev, ev.longitude, ev.latitude);
         droppedPin.longitude = ev.longitude;
@@ -95,10 +85,7 @@ var initPhotoViewer = (data) => {
         document.getElementById('confirmModal').setAttribute('style', 'display: block; z-index: 100');
     });
 
-    viewer360.on('dblclick', (e, dblclick) => {
-        console.log('dbl', e, dblclick);
-    });
-
+    //360 image markers click event listener
     viewer360.on('select-marker', (marker, dblclick) => {
         console.log(marker, dblclick);
         if (dblclick === true) {
@@ -111,14 +98,38 @@ var initPhotoViewer = (data) => {
                 console.log('From circle', marker.data.redirect);
                 document.getElementsByClassName('psv-canvas')[0].style += ' ; transition: all 3s; transform: scale(1.2);';
                 setTimeout(() => {
-                    initPhotoViewer(marker.data.imageUrl);
-                    movePointerLocation('tag-237-121');
+                    let newImg = dataStore.images.filter(val => val.tagId === marker.data.tagId)[0].url;
+                    activeTagId = marker.data.tagId;
+                    initPhotoViewer(newImg);
+                    movePointerLocation(marker.data.tagId);
                 }, 2000);
             }
         }
     });
 };
 
+//create the markers for showing naviagation on 360 images
+var createMovementMarker = (latitude, longitude, imageUrl, tagId) => {
+    let temp = {
+        id: '#circle' + Math.random(),
+        image: '/images/movement.gif',
+        latitude: latitude,
+        longitude: longitude,
+        tooltip: 'Move',
+        anchor: 'bottom center',
+        width: 32,
+        height: 32,
+        visible: true,
+        data: {
+            redirect: true,
+            imageUrl: imageUrl,
+            tagId: tagId
+        }
+    };
+    return Object.assign({}, temp);
+};
+
+//renders images thumnail section on the screen
 var presentThumbnail = (images) => {
     console.log('here', images);
     images.map(val => {
@@ -127,6 +138,7 @@ var presentThumbnail = (images) => {
     });
 };
 
+//create image thumbnail component
 var imageThumbnail = (data) => {
     var div = document.createElement('div');
     div.setAttribute('style', "background-image: url('"+ data.url +"'); background-size: cover;");
@@ -135,6 +147,7 @@ var imageThumbnail = (data) => {
     return div;
 };
 
+//fetch images for 360 from API
 var fetchImages = () => {
     return fetch('/api/getimages')
         .then(response => response.json())
@@ -145,6 +158,7 @@ var fetchImages = () => {
         .catch(err => console.error(err));
 };
 
+//fetch location pointer from API
 var fetchBlueprintPointers = (imageId) => {
     return fetch('/api/admin/getpointers?imageid=1')
             .then(response => response.json())
@@ -155,6 +169,7 @@ var fetchBlueprintPointers = (imageId) => {
             .catch(err => console.log('Some Error Occurred', err));
 };
 
+//create location pointer component
 var createPointer = data => {
     var div = document.createElement('div');
     div.setAttribute('class', 'pointer');
@@ -164,17 +179,19 @@ var createPointer = data => {
     return div;
 };
 
+//click eveny listener for image thumbnail section
 document.getElementById('thumbnail-container').addEventListener('click', (e) => {
     console.log(e.target.dataset.imgSrc);
-    if(e.target.dataset.imgSrc) {
-        initPhotoViewer(e.target.dataset.imgSrc);
-    }
     if(e.target.dataset.tagId) {
         movePointerLocation(e.target.dataset.tagId);
         activeTagId = e.target.dataset.tagId;
     }
+    if(e.target.dataset.imgSrc) {
+        initPhotoViewer(e.target.dataset.imgSrc);
+    }
 });
 
+//takes care movement of user on blueprint by marking with red boundry
 var movePointerLocation = (tagId) => {
     cleanSelectedPointers();
     let tmp = "div[data-tag-id=" + tagId + "][class=pointer]";
@@ -185,6 +202,7 @@ var movePointerLocation = (tagId) => {
     }
 };
 
+//cleans previous position of user from blueprint
 var cleanSelectedPointers = () => {
     var pointers = document.getElementsByClassName('pointer');
     for (let el of pointers) {
@@ -192,6 +210,7 @@ var cleanSelectedPointers = () => {
     }
 };
 
+//return new (x, y) co-ordinates on passing (x, y) of origin, angle and distance from center
 var findNewPoint = (x, y, angle, distance) => {
     var result = {};
     result.x = Math.round(Math.cos(angle * Math.PI / 180) * distance + x);
@@ -199,45 +218,35 @@ var findNewPoint = (x, y, angle, distance) => {
     return result;
 };
 
-document.getElementsByClassName('blueprint-thumbnail-container')[0].addEventListener('click', (e) => {
-
-});
-
+//event listener for modal cancel button
 document.getElementById('confirmCancel').addEventListener('click', e => {
     e.preventDefault();
     e.stopPropagation();
     document.getElementById('confirmModal').style.display = 'none';
 });
 
+//event listener for modal ok button || adds pin on 360 and open blueprint
 document.getElementById('confirmOk').addEventListener('click', e => {
     document.getElementById('confirmModal').style.display = 'none';
-    addedMarker = viewer360.addMarker({
-        id: '#' + Math.random(),
+    addedMarker = addMarker({
         longitude: droppedPin.longitude,
         latitude: droppedPin.latitude,
-        image: '/images/red-pin.png',
-        width: 32,
-        height: 32,
-        anchor: 'bottom center',
-        tooltip: 'Generated pin',
-        data: {
-          generated: true
-        }
     });
     viewer360.animate(droppedPin, 1000);
     let blueprintThumbnailContainer = document.getElementsByClassName('blueprint-thumbnail-container')[0];
     blueprintThumbnailContainer.click();
-    let finalAngle = (droppedPin.longitude*(180/Math.PI) + 90) % 360;
     let largeBlueprint = document.getElementsByClassName('blueprint-large')[0];
     let selectedPointer = largeBlueprint.querySelector('.pointer-selected');
     let y = (parseFloat(selectedPointer.style.top.replace('%'))/100) * 400;//image height
     let x = (parseFloat(selectedPointer.style.left.replace('%'))/100) * 800; //image width
     trianglePoints.B = {x: Math.round(x), y: Math.round(y)};
+    let finalAngle = (droppedPin.longitude*(180/Math.PI) + Number(selectedPointer.dataset.angleOffset)) % 360;
     let newPoints = findNewPoint(x, y, finalAngle, 30);
     trianglePoints.A = {x: newPoints.x, y: newPoints.y};
     createUserPinBlueprint(newPoints.x, newPoints.y, 800, 400);
 });
 
+//create non-movable previous user pins on blueprints
 var createStaticUserPinBlueprint = (x, y) => {
     let div = document.createElement('div');
     div.setAttribute('class', 'user-pointer');
@@ -246,6 +255,7 @@ var createStaticUserPinBlueprint = (x, y) => {
     document.getElementsByClassName('blueprint-large')[0].appendChild(div);
 };
 
+//create movable user pins on blueprints with dragging listeners
 var createUserPinBlueprint = (x, y , imageX, imageY) => {
     let div = document.createElement('div');
     div.setAttribute('class', 'user-pointer');
@@ -271,7 +281,6 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
                 latitude: addedMarker.latitude,
                 longitude: addedMarker.longitude
             };
-            console.log('payload', payload);
             fetch('/api/user/storepin', {
                 method: 'POST',
                 headers: {
@@ -322,15 +331,18 @@ var createUserPinBlueprint = (x, y , imageX, imageY) => {
             if ( trianglePoints.C.y < trianglePoints.B.y ) {
                 finalAngle = 360 - finalAngle;
             }
+            let largeBlueprint = document.getElementsByClassName('blueprint-large')[0];
+            let selectedPointer = largeBlueprint.querySelector('.pointer-selected');
             console.log(finalAngle);
-            viewer360.animate({latitude: 0, longitude: (finalAngle - 90) * (Math.PI/180)}, 1000);
+            viewer360.animate({latitude: 0, longitude: (finalAngle - (selectedPointer.dataset.angleOffset)) * (Math.PI/180)}, 1000);
             removeMarker(addedMarker);
-            addedMarker = addMarker({latitude: droppedPin.latitude, longitude: (finalAngle - 90) * (Math.PI/180)});
+            addedMarker = addMarker({latitude: droppedPin.latitude, longitude: (finalAngle - (selectedPointer.dataset.angleOffset)) * (Math.PI/180)});
         };
     }
     
 };
 
+//function to add user pin on 360
 var addMarker = obj => {
     return viewer360.addMarker({
             id: '#' + Math.random(),
@@ -346,12 +358,16 @@ var addMarker = obj => {
             }
         });
 };
+
+//function to remove user pin from 360 || takes marker object to remove
 var removeMarker = marker => viewer360.removeMarker(marker);
 
+//initializes the environment || executes at page load
 var init = () => {
     fetchImages()
     .then(data => {
         console.log('Images', data);
+        dataStore.images = data.images.slice();
         presentThumbnail(data.images);
     });
     fetchBlueprintPointers()
@@ -371,5 +387,5 @@ var init = () => {
     });
 };
 
-
+//window load event listener || code flow starts from here
 window.addEventListener('load', init);
